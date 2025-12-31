@@ -11,7 +11,7 @@ export async function GET() {
         // Parallel fetch for all entities
         const [professorsData, disciplinesData, lessonsData, groupsData] = await Promise.all([
             getSheetData(process.env.SHEET_ID, 'Professores!A2:G'),
-            getSheetData(process.env.SHEET_ID, 'Disciplinas!A2:G'),
+            getSheetData(process.env.SHEET_ID, 'Disciplinas!A2:J'), // Expanded to include ProfIds (I) and AllowedShifts (J)
             getSheetData(process.env.SHEET_ID, 'Aulas!A2:G'),
             getSheetData(process.env.SHEET_ID, 'Turmas!A2:C'),
         ]);
