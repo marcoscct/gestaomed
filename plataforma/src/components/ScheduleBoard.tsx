@@ -428,17 +428,7 @@ function DroppableSlot({ id, children, hasConflict, count }: { id: string, child
     );
 }
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { DndContext, DragEndEvent, DragOverlay, useDraggable, useDroppable } from '@dnd-kit/core';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { GripVertical } from 'lucide-react'; // Import GripVertical
-
-import { DisciplineEditor } from '@/components/DisciplineEditor';
-import { Discipline, LessonTemplate } from '@/types/schema';
+// End of file
 
 // Types
 // Extending Schema Discipline to include UI state like assignedTo
