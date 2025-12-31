@@ -75,13 +75,11 @@ export class AutoScheduler {
 
     private findBestSlot(discipline: ClassItem): string | null {
         const groupConfig = this.config.groups.find(g => g.id === discipline.studentGroup);
-        const allowMorning = groupConfig?.shifts.morning !== false; // Default true if not found
+        const allowMorning = groupConfig?.shifts.morning !== false;
         const allowAfternoon = groupConfig?.shifts.afternoon !== false;
 
-        // Build a list of ALL possible candidate slots
-        let candidateSlots: { slotId: string, day: string, timeIndex: number, currentLoad: number }[] = [];
         const candidateSlots: { slotId: string; score: number; currentLoad: number }[] = [];
-        const duration = discipline.duration || 2; // Default duration in hours/slots
+        const duration = discipline.duration || 2;
 
         // Heuristic: Iterate ALL slots, check valid, score by load
         DAYS.forEach(day => {
@@ -89,17 +87,16 @@ export class AutoScheduler {
                 if (this.canFit(discipline, day, i, duration)) {
                     const slotId = `${day}-${TIMES[i]}`;
 
-                    // Simple Load Score: How many events already in this slot across ALL rooms?
+                    // Simple Load Score
                     let totalLoad = 0;
                     for (let k = 0; k < duration; k++) {
                         const sId = `${day}-${TIMES[i + k]}`;
                         totalLoad += (this.slotUsageCount.get(sId) || 0);
                     }
 
-                    // Score could also favor contiguous blocks or specific days in future
                     candidateSlots.push({
                         slotId,
-                        score: totalLoad, // We want MIN loading
+                        score: totalLoad,
                         currentLoad: totalLoad
                     });
                 }
@@ -143,7 +140,7 @@ export class AutoScheduler {
             // C. Professor Conflicts
             if (discipline.professorIds) {
                 for (const pid of discipline.professorIds) {
-                    if (this.isProfessorBusy(pid, slotId)) return false;
+                    if (this.isProfessorBusy(pid, checkSlot)) return false;
                 }
             }
         }

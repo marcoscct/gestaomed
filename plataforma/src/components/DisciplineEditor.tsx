@@ -1,4 +1,4 @@
-```
+
 import React, { useState, useEffect } from 'react';
 import { Discipline, LessonTemplate, WorkloadType } from '@/types/schema';
 import { Button } from '@/components/ui/button';
@@ -72,7 +72,7 @@ export function DisciplineEditor({ open, onOpenChange, discipline, onSave }: Dis
         const newLesson: LessonTemplate = {
             id: crypto.randomUUID(),
             disciplineId: formData.id,
-            name: `Aula ${ lessons.length + 1 } `,
+            name: `Aula ${lessons.length + 1} `,
             order: lessons.length + 1,
             type: 'TEORICA',
             duration: 2
