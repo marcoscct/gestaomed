@@ -65,6 +65,13 @@ export function ScheduleBoard() {
         return ['All', ...Array.from(g).sort()];
     }, [classes]);
 
+    // Helper: Get Color for Group
+    const getGroupColor = (groupName: string) => {
+        if (!schedulerSettings) return undefined;
+        const g = schedulerSettings.groups.find(x => x.id === groupName);
+        return g?.color;
+    };
+
     const filteredClasses = useMemo(() => {
         if (selectedGroup === 'All') return classes;
         return classes.filter(c => c.studentGroup === selectedGroup);
