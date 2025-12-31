@@ -28,6 +28,7 @@ export function mapRowToDiscipline(row: string[]): Discipline {
         studentGroup: row[6] || 'Geral',
         workloadType: (row[7] as any) || 'WEEKLY',
         professorIds: row[8] ? row[8].split(',').map(s => s.trim()) : [],
+        allowedShifts: row[9] ? row[9].split(',').map(s => s.trim().toUpperCase() as any) : undefined,
         lessons: [] // To be populated
     };
 }

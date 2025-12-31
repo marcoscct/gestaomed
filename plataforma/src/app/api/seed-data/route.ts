@@ -49,6 +49,12 @@ export async function POST() {
             else if (d === 1) profIds = ['P002'];
             else profIds = [`P${String(Math.floor(Math.random() * 25) + 5).padStart(3, '0')}`];
 
+            // Shift Logic: 
+            // Sem 1-4: MORNING, AFTERNOON
+            // Sem 5-8: AFTERNOON, NIGHT (Just to demonstrate variety)
+            let shifts = ['MORNING', 'AFTERNOON'];
+            if (s >= 4) shifts = ['AFTERNOON', 'NIGHT'];
+
             const row = [
                 discId,
                 `MED_${discCounter}`,
@@ -58,7 +64,8 @@ export async function POST() {
                 d % 2 === 0 ? 'Sala de Aula' : 'Laboratório',
                 semName,
                 'WEEKLY',
-                profIds.join(', ')
+                profIds.join(', '),
+                shifts.join(',')
             ];
             disciplines.push(row);
 
