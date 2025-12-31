@@ -134,8 +134,10 @@ export class AutoScheduler {
 
             // B. Group Overlap (Same group cannot be in two places at once)
             // Assumption: A Student Group can only afford 1 class at a time.
-            const isGroupBusy = this.isGroupBusy(discipline.studentGroup, checkSlot);
-            if (isGroupBusy) return false;
+            if (discipline.studentGroup) {
+                const isGroupBusy = this.isGroupBusy(discipline.studentGroup, checkSlot);
+                if (isGroupBusy) return false;
+            }
 
             // C. Professor Conflicts
             if (discipline.professorIds) {
