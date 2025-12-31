@@ -35,6 +35,7 @@ export interface Discipline {
     studentGroup?: string;
     professorIds: string[]; // Pool of professors
     lessons: LessonTemplate[];
+    allowedShifts?: ('MORNING' | 'AFTERNOON' | 'NIGHT')[]; // Granular constraints
 }
 
 export interface StudentGroup {

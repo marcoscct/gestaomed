@@ -80,71 +80,67 @@ export class AutoScheduler {
 
         // Build a list of ALL possible candidate slots
         let candidateSlots: { slotId: string, day: string, timeIndex: number, currentLoad: number }[] = [];
+        const candidateSlots: { slotId: string; score: number; currentLoad: number }[] = [];
+        const duration = discipline.duration || 2; // Default duration in hours/slots
 
-        for (const day of DAYS) {
-            for (let t = 0; t < TIMES.length; t++) {
-                // Shift Filter
-                const isMorning = t <= 5;
-                if (isMorning && !allowMorning) continue;
-                if (!isMorning && !allowAfternoon) continue;
+        // Heuristic: Iterate ALL slots, check valid, score by load
+        DAYS.forEach(day => {
+            for (let i = 0; i <= TIMES.length - duration; i++) {
+                if (this.canFit(discipline, day, i, duration)) {
+                    const slotId = `${day}-${TIMES[i]}`;
 
-                // Check Basic Constraints (Prof, Group, Room Capacity)
-                const duration = discipline.duration || 2;
-                if (this.canFit(discipline, day, t, duration)) {
-                    // Score this slot: How busy is it globally?
-                    // We sum the usage of all sub-slots required
+                    // Simple Load Score: How many events already in this slot across ALL rooms?
                     let totalLoad = 0;
-                    for (let i = 0; i < duration; i++) {
-                        totalLoad += this.slotUsageCount.get(`${day}-${TIMES[t + i]}`) || 0;
+                    for (let k = 0; k < duration; k++) {
+                        const sId = `${day}-${TIMES[i + k]}`;
+                        totalLoad += (this.slotUsageCount.get(sId) || 0);
                     }
 
+                    // Score could also favor contiguous blocks or specific days in future
                     candidateSlots.push({
-                        slotId: `${day}-${TIMES[t]}`,
-                        day,
-                        timeIndex: t,
+                        slotId,
+                        score: totalLoad, // We want MIN loading
                         currentLoad: totalLoad
                     });
                 }
             }
-        }
+        });
 
-        // Heuristic: "Spread" - Choose the slot with the LEAST total load
         if (candidateSlots.length === 0) return null;
 
-        // Sort candidates: Lowest Load first
+        // Spread Strategy: Sort by least loaded
         candidateSlots.sort((a, b) => a.currentLoad - b.currentLoad);
 
-        // Pick top 1 (or randomize among top 3 for variation, but strict best is fine for MVP)
+        // Pick the best (least loaded)
         return candidateSlots[0].slotId;
     }
 
     private canFit(discipline: ClassItem, day: string, timeIndex: number, duration: number): boolean {
-        // Boundary Check
+        // Boundary Check (ensure duration doesn't go past end of TIMES array)
         if (timeIndex + duration > TIMES.length) return false;
 
-        // Check each sub-slot in the block
-        for (let i = 0; i < duration; i++) {
-            const time = TIMES[timeIndex + i];
+        // Check for morning/afternoon split
+        const blockStartIsMorning = timeIndex <= 5;
+        for (let k = 0; k < duration; k++) {
+            const currentIsMorning = (timeIndex + k) <= 5;
+            if (blockStartIsMorning !== currentIsMorning) return false; // Block spans morning/afternoon
+        }
 
-            // Lunch Break Check: Can't span from morning to afternoon
-            // If we start in morning (<=5) and current sub-slot > 5, invalid.
-            // Actually, simplest check: A block must be contained entirely within Morning OR Afternoon indices.
-            const blockStartIsMorning = timeIndex <= 5;
-            const currentIsMorning = (timeIndex + i) <= 5;
-            if (blockStartIsMorning !== currentIsMorning) return false;
+        // 1. Check Constraint: Max Rooms (Capacity) & Overlap
+        // We must ensure EVERY slot in the duration has capacity
+        for (let k = 0; k < duration; k++) {
+            const checkSlot = `${day}-${TIMES[timeIndex + k]}`;
 
-            const slotId = `${day}-${time}`;
-
-            // 1. Room Capacity Check
-            const currentRoomUsage = this.slotUsageCount.get(slotId) || 0;
+            // A. Global Room Capacity
+            const currentRoomUsage = this.slotUsageCount.get(checkSlot) || 0;
             if (currentRoomUsage >= this.config.maxRooms) return false;
 
-            // 2. Group Conflicts
-            if (discipline.studentGroup && this.isGroupBusy(discipline.studentGroup, slotId)) {
-                return false;
-            }
+            // B. Group Overlap (Same group cannot be in two places at once)
+            // Assumption: A Student Group can only afford 1 class at a time.
+            const isGroupBusy = this.isGroupBusy(discipline.studentGroup, checkSlot);
+            if (isGroupBusy) return false;
 
-            // 3. Professor Conflicts
+            // C. Professor Conflicts
             if (discipline.professorIds) {
                 for (const pid of discipline.professorIds) {
                     if (this.isProfessorBusy(pid, slotId)) return false;

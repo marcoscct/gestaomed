@@ -1,8 +1,10 @@
+```
 import React, { useState, useEffect } from 'react';
 import { Discipline, LessonTemplate, WorkloadType } from '@/types/schema';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import {
     Sheet,
@@ -70,7 +72,7 @@ export function DisciplineEditor({ open, onOpenChange, discipline, onSave }: Dis
         const newLesson: LessonTemplate = {
             id: crypto.randomUUID(),
             disciplineId: formData.id,
-            name: `Aula ${lessons.length + 1}`,
+            name: `Aula ${ lessons.length + 1 } `,
             order: lessons.length + 1,
             type: 'TEORICA',
             duration: 2
@@ -163,6 +165,55 @@ export function DisciplineEditor({ open, onOpenChange, discipline, onSave }: Dis
                                 })}
                                 placeholder="P001, P002"
                             />
+                        </div>
+
+                        {/* Shift Preferences */}
+                        <div className="space-y-3 pt-2 border-t">
+                            <Label className="text-sm font-medium">Turnos Permitidos</Label>
+                            <div className="flex gap-4">
+                                <div className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id="shift-morning"
+                                        checked={formData.allowedShifts?.includes('MORNING')}
+                                        onCheckedChange={(checked) => {
+                                            const current = formData.allowedShifts || [];
+                                            const updated = checked
+                                                ? [...current, 'MORNING']
+                                                : current.filter(s => s !== 'MORNING');
+                                            setFormData({ ...formData, allowedShifts: updated as any });
+                                        }}
+                                    />
+                                    <Label htmlFor="shift-morning">Manhã</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id="shift-afternoon"
+                                        checked={formData.allowedShifts?.includes('AFTERNOON')}
+                                        onCheckedChange={(checked) => {
+                                            const current = formData.allowedShifts || [];
+                                            const updated = checked
+                                                ? [...current, 'AFTERNOON']
+                                                : current.filter(s => s !== 'AFTERNOON');
+                                            setFormData({ ...formData, allowedShifts: updated as any });
+                                        }}
+                                    />
+                                    <Label htmlFor="shift-afternoon">Tarde</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id="shift-night"
+                                        checked={formData.allowedShifts?.includes('NIGHT')}
+                                        onCheckedChange={(checked) => {
+                                            const current = formData.allowedShifts || [];
+                                            const updated = checked
+                                                ? [...current, 'NIGHT']
+                                                : current.filter(s => s !== 'NIGHT');
+                                            setFormData({ ...formData, allowedShifts: updated as any });
+                                        }}
+                                    />
+                                    <Label htmlFor="shift-night">Noite</Label>
+                                </div>
+                            </div>
                         </div>
 
                         <hr className="border-slate-100 dark:border-slate-800" />
