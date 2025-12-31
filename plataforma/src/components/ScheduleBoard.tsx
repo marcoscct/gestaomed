@@ -141,194 +141,195 @@ export function ScheduleBoard() {
                         >
                             {saving ? 'Saving...' : 'Save Schedule'}
                         </Button>
-                        {/* Auto-Schedule Button */}
-                        <Button
-                            variant="secondary"
-                            onClick={async () => {
-                                if (confirm('Auto-Schedule will attempt to fill empty slots. Continue?')) {
-                                    setSaving(true);
-                                    try {
-                                        const res = await fetch('/api/auto-schedule', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ classes })
-                                        });
-                                        const data = await res.json();
-                                        if (data.success) {
-                                            setClasses(data.classes);
-                                            if (data.conflicts.length > 0) {
-                                                alert(`Scheduled with conflicts:\n${data.conflicts.join('\n')}`);
-                                            } else {
-                                                alert('Schedule Optimized Successfully!');
-                                            }
-                                        }
-                                    } catch (e) {
-                                        alert('Optimization failed');
-                                    } finally {
-                                        setSaving(false);
-                                    }
-                                }
-                            }}
-                            className="gap-2 bg-purple-100 text-purple-900 border-purple-200 hover:bg-purple-200"
-                        >
-                            ✨ Auto-Fill
-                        </Button>
-
-                        <Button
-                            variant="outline"
-                            onClick={() => {
-                                if (viewMode === 'BOARD') {
-                                    // Generate Calendar
-                                    const schedule = classes
-                                        .filter(c => c.assignedTo)
-                                        .map(c => {
-                                            const [day, time] = c.assignedTo!.split('-');
-                                            // Simple Frequency Map
-                                            // BIWEEKLY -> BIWEEKLY
-                                            // Others -> WEEKLY (including MONTHLY/TOTAL for MVP)
-                                            const mappedFrequency = c.workloadType === 'BIWEEKLY' ? 'BIWEEKLY' : 'WEEKLY';
-
-                                            // TODO: Add UI to set Offset. For now default 0 (Even).
-                                            // If we had a mechanism to drop "Anatomia A" and "Anatomia B" we would set this.
-                                            const offset = 0;
-
-                                            return {
-                                                disciplineId: c.id,
-                                                disciplineName: c.name,
-                                                dayOfWeek: day,
-                                                startTime: time,
-                                                duration: 2,
-                                                studentGroup: c.studentGroup || 'Geral',
-                                                frequency: mappedFrequency as Frequency,
-                                                weekOffset: offset,
-                                                lessons: c.lessons || []
-                                            };
-                                        });
-                                    const events = generateSemesterCalendar(schedule, new Date('2026-02-02'), new Date('2026-06-30'));
-                                    setGeneratedEvents(events);
-                                    setViewMode('CALENDAR');
-                                } else {
-                                    setViewMode('BOARD');
-                                }
-                            }}
-                        >
-                            {viewMode === 'BOARD' ? 'View Calendar (2026)' : 'Back to Editing'}
-                        </Button>
                     </div>
-
-                    <DisciplineEditor
-                        open={!!editingDiscipline}
-                        onOpenChange={(open) => !open && setEditingDiscipline(null)}
-                        discipline={editingDiscipline}
-                        onSave={(updated) => {
-                            // Update local state
-                            setClasses(prev => prev.map(c => c.id === updated.id ? { ...c, ...updated } : c));
+                    {/* Auto-Schedule Button */}
+                    <Button
+                        variant="secondary"
+                        onClick={async () => {
+                            if (confirm('Auto-Schedule will attempt to fill empty slots. Continue?')) {
+                                setSaving(true);
+                                try {
+                                    const res = await fetch('/api/auto-schedule', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ classes })
+                                    });
+                                    const data = await res.json();
+                                    if (data.success) {
+                                        setClasses(data.classes);
+                                        if (data.conflicts.length > 0) {
+                                            alert(`Scheduled with conflicts:\n${data.conflicts.join('\n')}`);
+                                        } else {
+                                            alert('Schedule Optimized Successfully!');
+                                        }
+                                    }
+                                } catch (e) {
+                                    alert('Optimization failed');
+                                } finally {
+                                    setSaving(false);
+                                }
+                            }
                         }}
-                    />
+                        className="gap-2 bg-purple-100 text-purple-900 border-purple-200 hover:bg-purple-200"
+                    >
+                        ✨ Auto-Fill
+                    </Button>
 
-                    {viewMode === 'CALENDAR' ? (
-                        <BigCalendarView events={generatedEvents} />
-                    ) : (
-                        <div className="flex gap-6 flex-1 overflow-hidden">
-                            {/* Sidebar: Unassigned Classes */}
-                            <Card className="w-72 flex-shrink-0 flex flex-col border-0 shadow-lg bg-white/80 backdrop-blur dark:bg-slate-900/80">
-                                <CardHeader className="pb-4 border-b">
-                                    <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-500 flex justify-between">
-                                        <span>Backlog</span>
-                                        <Badge variant="secondary">{unassignedClasses.length}</Badge>
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex-1 overflow-y-auto space-y-3 p-4 bg-slate-50/50 dark:bg-slate-950/50">
-                                    {unassignedClasses.map((cls) => (
-                                        <DraggableItem
-                                            key={cls.id}
-                                            id={cls.id}
-                                            item={cls}
-                                            onEdit={() => setEditingDiscipline(cls)}
-                                        />
-                                    ))}
-                                    {unassignedClasses.length === 0 && (
-                                        <div className="flex flex-col items-center justify-center h-40 text-muted-foreground opacity-50">
-                                            <span className="text-4xl mb-2">🎉</span>
-                                            <span className="text-xs">All classes scheduled!</span>
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </Card>
+                    <Button
+                        variant="outline"
+                        onClick={() => {
+                            if (viewMode === 'BOARD') {
+                                // Generate Calendar
+                                const schedule = classes
+                                    .filter(c => c.assignedTo)
+                                    .map(c => {
+                                        const [day, time] = c.assignedTo!.split('-');
+                                        // Simple Frequency Map
+                                        // BIWEEKLY -> BIWEEKLY
+                                        // Others -> WEEKLY (including MONTHLY/TOTAL for MVP)
+                                        const mappedFrequency = c.workloadType === 'BIWEEKLY' ? 'BIWEEKLY' : 'WEEKLY';
 
-                            {/* Main Board: Grid */}
-                            <div className="flex-1 overflow-hidden border rounded-xl bg-white dark:bg-black shadow-xl ring-1 ring-slate-900/5">
-                                <div className="h-full overflow-auto">
-                                    <div className="grid grid-cols-[80px_repeat(5,1fr)] min-w-[1000px]">
-                                        {/* Header */}
-                                        <div className="p-4 border-b border-r bg-slate-50/80 backdrop-blur sticky top-0 z-10"></div>
-                                        {DAYS.map(day => (
-                                            <div key={day} className="p-4 border-b border-r text-center font-bold text-sm text-slate-700 dark:text-slate-300 bg-slate-50/80 backdrop-blur sticky top-0 z-10">
-                                                {day}
-                                            </div>
-                                        ))}
+                                        // TODO: Add UI to set Offset. For now default 0 (Even).
+                                        // If we had a mechanism to drop "Anatomia A" and "Anatomia B" we would set this.
+                                        const offset = 0;
 
-                                        {/* Body */}
-                                        {HOURS.map(hour => (
-                                            <React.Fragment key={hour}>
-                                                {/* Time Label */}
-                                                <div className="p-3 border-b border-r text-center text-xs font-medium text-slate-400 bg-slate-50/30 sticky left-0 z-0">
-                                                    {hour}
-                                                </div>
-                                                {/* Slots */}
-                                                {DAYS.map(day => {
-                                                    const slotId = `${day}-${hour}`;
-                                                    const slotClasses = filteredClasses.filter(c => c.assignedTo === slotId);
-                                                    const allClassesInSlot = classes.filter(c => c.assignedTo === slotId);
-                                                    const hasConflict = allClassesInSlot.length > 1;
+                                        return {
+                                            disciplineId: c.id,
+                                            disciplineName: c.name,
+                                            dayOfWeek: day,
+                                            startTime: time,
+                                            duration: 2,
+                                            studentGroup: c.studentGroup || 'Geral',
+                                            frequency: mappedFrequency as Frequency,
+                                            weekOffset: offset,
+                                            lessons: c.lessons || []
+                                        };
+                                    });
+                                const events = generateSemesterCalendar(schedule, new Date('2026-02-02'), new Date('2026-06-30'));
+                                setGeneratedEvents(events);
+                                setViewMode('CALENDAR');
+                            } else {
+                                setViewMode('BOARD');
+                            }
+                        }}
+                    >
+                        {viewMode === 'BOARD' ? 'View Calendar (2026)' : 'Back to Editing'}
+                    </Button>
+                </div>
 
-                                                    return (
-                                                        <DroppableSlot key={slotId} id={slotId} hasConflict={hasConflict} count={allClassesInSlot.length}>
-                                                            {slotClasses.map(cls => (
-                                                                <div key={cls.id} className="relative group mb-1 last:mb-0">
-                                                                    <DraggableItem
-                                                                        id={cls.id}
-                                                                        item={cls}
-                                                                        isBoard
-                                                                        onEdit={() => setEditingDiscipline(cls)}
-                                                                    />
-                                                                    <button
-                                                                        className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white shadow-sm rounded-full w-5 h-5 text-[10px] hidden group-hover:flex items-center justify-center transition-all z-20"
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            setClasses(prev => prev.map(c => c.id === cls.id ? { ...c, assignedTo: undefined } : c));
-                                                                        }}
-                                                                    >
-                                                                        ×
-                                                                    </button>
-                                                                </div>
-                                                            ))}
-                                                            {selectedGroup !== 'All' && allClassesInSlot.length > slotClasses.length && (
-                                                                <div className="mt-1 px-2 py-1 text-[10px] rounded border border-dashed border-amber-300 bg-amber-50 text-amber-700 opacity-70">
-                                                                    + {allClassesInSlot.length - slotClasses.length} other(s)
-                                                                </div>
-                                                            )}
-                                                        </DroppableSlot>
-                                                    );
-                                                })}
-                                            </React.Fragment>
-                                        ))}
+                <DisciplineEditor
+                    open={!!editingDiscipline}
+                    onOpenChange={(open) => !open && setEditingDiscipline(null)}
+                    discipline={editingDiscipline}
+                    onSave={(updated) => {
+                        // Update local state
+                        setClasses(prev => prev.map(c => c.id === updated.id ? { ...c, ...updated } : c));
+                    }}
+                />
+
+                {viewMode === 'CALENDAR' ? (
+                    <BigCalendarView events={generatedEvents} />
+                ) : (
+                    <div className="flex gap-6 flex-1 overflow-hidden">
+                        {/* Sidebar: Unassigned Classes */}
+                        <Card className="w-72 flex-shrink-0 flex flex-col border-0 shadow-lg bg-white/80 backdrop-blur dark:bg-slate-900/80">
+                            <CardHeader className="pb-4 border-b">
+                                <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-500 flex justify-between">
+                                    <span>Backlog</span>
+                                    <Badge variant="secondary">{unassignedClasses.length}</Badge>
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="flex-1 overflow-y-auto space-y-3 p-4 bg-slate-50/50 dark:bg-slate-950/50">
+                                {unassignedClasses.map((cls) => (
+                                    <DraggableItem
+                                        key={cls.id}
+                                        id={cls.id}
+                                        item={cls}
+                                        onEdit={() => setEditingDiscipline(cls)}
+                                    />
+                                ))}
+                                {unassignedClasses.length === 0 && (
+                                    <div className="flex flex-col items-center justify-center h-40 text-muted-foreground opacity-50">
+                                        <span className="text-4xl mb-2">🎉</span>
+                                        <span className="text-xs">All classes scheduled!</span>
                                     </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Main Board: Grid */}
+                        <div className="flex-1 overflow-hidden border rounded-xl bg-white dark:bg-black shadow-xl ring-1 ring-slate-900/5">
+                            <div className="h-full overflow-auto">
+                                <div className="grid grid-cols-[80px_repeat(5,1fr)] min-w-[1000px]">
+                                    {/* Header */}
+                                    <div className="p-4 border-b border-r bg-slate-50/80 backdrop-blur sticky top-0 z-10"></div>
+                                    {DAYS.map(day => (
+                                        <div key={day} className="p-4 border-b border-r text-center font-bold text-sm text-slate-700 dark:text-slate-300 bg-slate-50/80 backdrop-blur sticky top-0 z-10">
+                                            {day}
+                                        </div>
+                                    ))}
+
+                                    {/* Body */}
+                                    {HOURS.map(hour => (
+                                        <React.Fragment key={hour}>
+                                            {/* Time Label */}
+                                            <div className="p-3 border-b border-r text-center text-xs font-medium text-slate-400 bg-slate-50/30 sticky left-0 z-0">
+                                                {hour}
+                                            </div>
+                                            {/* Slots */}
+                                            {DAYS.map(day => {
+                                                const slotId = `${day}-${hour}`;
+                                                const slotClasses = filteredClasses.filter(c => c.assignedTo === slotId);
+                                                const allClassesInSlot = classes.filter(c => c.assignedTo === slotId);
+                                                const hasConflict = allClassesInSlot.length > 1;
+
+                                                return (
+                                                    <DroppableSlot key={slotId} id={slotId} hasConflict={hasConflict} count={allClassesInSlot.length}>
+                                                        {slotClasses.map(cls => (
+                                                            <div key={cls.id} className="relative group mb-1 last:mb-0">
+                                                                <DraggableItem
+                                                                    id={cls.id}
+                                                                    item={cls}
+                                                                    isBoard
+                                                                    onEdit={() => setEditingDiscipline(cls)}
+                                                                />
+                                                                <button
+                                                                    className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white shadow-sm rounded-full w-5 h-5 text-[10px] hidden group-hover:flex items-center justify-center transition-all z-20"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setClasses(prev => prev.map(c => c.id === cls.id ? { ...c, assignedTo: undefined } : c));
+                                                                    }}
+                                                                >
+                                                                    ×
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                        {selectedGroup !== 'All' && allClassesInSlot.length > slotClasses.length && (
+                                                            <div className="mt-1 px-2 py-1 text-[10px] rounded border border-dashed border-amber-300 bg-amber-50 text-amber-700 opacity-70">
+                                                                + {allClassesInSlot.length - slotClasses.length} other(s)
+                                                            </div>
+                                                        )}
+                                                    </DroppableSlot>
+                                                );
+                                            })}
+                                        </React.Fragment>
+                                    ))}
                                 </div>
                             </div>
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
+            </div>
 
-                <DragOverlay>
-                    {activeId ? (
-                        <div className="opacity-90 rotate-2 cursor-grabbing">
-                            <div className="px-4 py-3 bg-blue-600 text-white rounded-lg shadow-2xl text-sm font-bold w-48 ring-2 ring-white">
-                                Dragging...
-                            </div>
+            <DragOverlay>
+                {activeId ? (
+                    <div className="opacity-90 rotate-2 cursor-grabbing">
+                        <div className="px-4 py-3 bg-blue-600 text-white rounded-lg shadow-2xl text-sm font-bold w-48 ring-2 ring-white">
+                            Dragging...
                         </div>
-                    ) : null}
-                </DragOverlay>
+                    </div>
+                ) : null}
+            </DragOverlay>
         </DndContext>
     );
 }
