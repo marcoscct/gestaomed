@@ -24,6 +24,8 @@
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "date-fns": "^2.30.0",
+    "react-big-calendar": "^1.8.5",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
