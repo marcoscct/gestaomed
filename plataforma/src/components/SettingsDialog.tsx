@@ -136,15 +136,16 @@ export function SettingsDialog({ open, onOpenChange, groups, currentSettings, on
                         <ScrollArea className="h-[400px] pr-4">
                             <div className="space-y-6">
                                 {groupSettings.map((group) => (
-                                <div key={group.id} className="p-4 border rounded-lg space-y-4 bg-slate-50/50 dark:bg-slate-900/50">
-                                    <div className="flex items-center justify-between">
-                                        <h4 className="font-medium text-sm flex items-center gap-2">
-                                            {group.id}
-                                            <Badge variant="outline" className="text-xs font-normal" style={{ backgroundColor: group.color }}>
-                                                {group.color}
-                                            </Badge>
-                                        </h4>
-                                    </div>
+                                    <div key={group.id} className="p-4 border rounded-lg space-y-4 bg-slate-50/50 dark:bg-slate-900/50">
+                                        <div className="flex items-center justify-between">
+                                            <h4 className="font-medium text-sm flex items-center gap-2">
+                                                {group.id}
+                                                <Badge variant="outline" className="text-xs font-normal" style={{ backgroundColor: group.color, color: '#fff', borderColor: group.color }}>
+                                                    {group.color}
+                                                </Badge>
+                                            </h4>
+
+                                            {/* Color Picker */}
                                             <div className="flex items-center gap-2">
                                                 <Label className="text-xs text-muted-foreground">Cor:</Label>
                                                 <input
@@ -157,40 +158,38 @@ export function SettingsDialog({ open, onOpenChange, groups, currentSettings, on
                                         </div>
 
                                         <div className="flex flex-col gap-2">
-                                            <Label className="text-xs font-semibold mb-1">Turnos Permitidos:</Label>
-                                            <div className="flex items-center space-x-2">
-                                                <Checkbox
-                                                    id={`m-${group.id}`}
-                                                    checked={group.shifts.morning}
-                                                    onCheckedChange={(c) => updateGroup(group.id, { morning: c === true })}
-                                                />
-                                                <label htmlFor={`m-${group.id}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                                    Manhã
-                                                </label>
-                                            </div>
-                                            <div className="flex items-center space-x-2">
-                                                <Checkbox
-                                                    id={`a-${group.id}`}
-                                                    checked={group.shifts.afternoon}
-                                                    onCheckedChange={(c) => updateGroup(group.id, { afternoon: c === true })}
-                                                />
-                                                <label htmlFor={`a-${group.id}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                                    Tarde
-                                                </label>
+                                            <Label className="text-xs font-semibold mb-1">Turnos Padrão:</Label>
+                                            <div className="flex items-center gap-4">
+                                                <div className="flex items-center space-x-2">
+                                                    <Checkbox
+                                                        id={`m-${group.id}`}
+                                                        checked={group.shifts.morning}
+                                                        onCheckedChange={(c) => updateGroup(group.id, { morning: c === true })}
+                                                    />
+                                                    <label htmlFor={`m-${group.id}`} className="text-sm">Manhã</label>
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <Checkbox
+                                                        id={`a-${group.id}`}
+                                                        checked={group.shifts.afternoon}
+                                                        onCheckedChange={(c) => updateGroup(group.id, { afternoon: c === true })}
+                                                    />
+                                                    <label htmlFor={`a-${group.id}`} className="text-sm">Tarde</label>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 ))}
-                        </div>
-                    </ScrollArea>
-                </TabsContent>
-            </Tabs>
+                            </div>
+                        </ScrollArea>
+                    </TabsContent>
+                </Tabs>
 
-            <DialogFooter className="pt-4">
-                <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-                <Button onClick={handleSave}>Salvar Configurações</Button>
-            </DialogFooter>
-        </DialogContent>
+                <DialogFooter className="pt-4">
+                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+                    <Button onClick={handleSave}>Salvar Configurações</Button>
+                </DialogFooter>
+            </DialogContent>
         </Dialog >
     );
 }
