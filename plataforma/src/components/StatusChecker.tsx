@@ -10,9 +10,25 @@ export function StatusChecker() {
     const [status, setStatus] = useState<'loading' | 'ok' | 'error'>('loading');
     const [message, setMessage] = useState('');
 
+    const [mounted, setMounted] = useState(false);
+
     useEffect(() => {
+        setMounted(true);
         checkStatus();
     }, []);
+
+    if (!mounted) {
+        return (
+            <Card className="w-full max-w-md">
+                <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                        System Status
+                    </CardTitle>
+                    <CardDescription>Connecting...</CardDescription>
+                </CardHeader>
+            </Card>
+        );
+    }
 
     async function checkStatus() {
         setStatus('loading');
