@@ -59,6 +59,29 @@ export const Dictionary = {
         Wednesday: "Quarta-feira",
         Thursday: "Quinta-feira",
         Friday: "Sexta-feira"
+    },
+    editor: {
+        title: "Editar Disciplina",
+        subtitle: "Configure o plano de ensino e restrições.",
+        fields: {
+            name: "Nome da Disciplina",
+            code: "Código",
+            workloadType: "Tipo de Carga",
+            totalLoad: "Carga Horária (h)",
+            professors: "Professores (separados por vírgula)"
+        },
+        syllabus: {
+            title: "Plano de Aulas",
+            addLesson: "Adicionar Aula",
+            empty: "Nenhuma aula definida ainda.",
+            lessonPlaceholder: "Tema da aula...",
+            order: "Aula"
+        },
+        actions: {
+            save: "Salvar Alterações",
+            saving: "Salvando...",
+            cancel: "Cancelar"
+        }
     }
 };
 
