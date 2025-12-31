@@ -54,10 +54,17 @@ export function SettingsDialog({ open, onOpenChange, groups, currentSettings, on
                 // Merge existing settings with potentially new groups found in data
                 const mergedGroups = groups.map((g, index) => {
                     const existing = currentSettings.groups.find(gs => gs.id === g);
-                    return existing || {
+                    if (existing) {
+                        // Ensure strictly typical shape (polyfill if old data missing night)
+                        return {
+                            ...existing,
+                            shifts: { night: false, ...existing.shifts } // default night to false if missing
+                        };
+                    }
+                    return {
                         id: g,
                         color: DEFAULT_COLORS[index % DEFAULT_COLORS.length],
-                        shifts: { morning: true, afternoon: true }
+                        shifts: { morning: true, afternoon: true, night: false }
                     };
                 });
                 setGroupSettings(mergedGroups);
@@ -66,7 +73,7 @@ export function SettingsDialog({ open, onOpenChange, groups, currentSettings, on
                 const defaults = groups.map((g, index) => ({
                     id: g,
                     color: DEFAULT_COLORS[index % DEFAULT_COLORS.length],
-                    shifts: { morning: true, afternoon: true }
+                    shifts: { morning: true, afternoon: true, night: false }
                 }));
                 setGroupSettings(defaults);
             }
@@ -84,8 +91,8 @@ export function SettingsDialog({ open, onOpenChange, groups, currentSettings, on
     const updateGroup = (id: string, update: Partial<GroupSettings> | Partial<GroupSettings['shifts']>) => {
         setGroupSettings(prev => prev.map(g => {
             if (g.id !== id) return g;
-            if ('morning' in update || 'afternoon' in update) {
-                return { ...g, shifts: { ...g.shifts, ...update } };
+            if ('morning' in update || 'afternoon' in update || 'night' in update) {
+                return { ...g, shifts: { ...g.shifts, ...(update as any) } };
             }
             return { ...g, ...update };
         }));
