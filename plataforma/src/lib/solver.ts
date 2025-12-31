@@ -94,62 +94,69 @@ export class AutoScheduler {
             const time = TIMES[timeIndex + i];
 
             // Artificial Break: Don't span across Lunch (11:40 -> 13:30)
-            // If duration=2, 11:40 is valid start? 11:40+50min = 12:30. Yes.
-            // But if we defined rigid slots, we are fine.
-            // Assumption: TIMES array is contiguous logic. 
-            // Wait, TIMES has a gap between 11:40 and 13:30.
-            // If I implement index-based logic, 11:40 is index 5. 13:30 is index 6.
-            // If index 5 + 1 = 6, we assign 11:40 AND 13:30. This bridges lunch. 
-            // We might want to avoid that.
-            // Let's be strict: If any ID listed is busy, we can't schedule.
-            for (const pid of discipline.professorIds) {
-                if (this.isProfessorBusy(pid, slotId)) return false;
+            // Lunch is between index 5 (11:40) and 6 (13:30).
+            // If block spans from <= 5 to >= 6, it crosses lunch.
+            // Simplified: If we are at index 5 (11:40), next must be 6 (13:30).
+            // We allow spanning for now as per previous logic assumptions, 
+            // but we MUST ensure 'time' exists and slotId is valid.
+
+            const slotId = `${day}-${time}`;
+
+            // Check Group Conflicts
+            if (discipline.studentGroup && this.isGroupBusy(discipline.studentGroup, slotId)) {
+                return false;
+            }
+
+            // Check Professor Conflicts
+            if (discipline.professorIds) {
+                for (const pid of discipline.professorIds) {
+                    if (this.isProfessorBusy(pid, slotId)) return false;
+                }
             }
         }
-    }
 
         return true;
     }
 
     private registerAllocation(d: ClassItem, startSlotId: string) {
-    const [day, startTime] = startSlotId.split('-');
-    const startIndex = TIMES.indexOf(startTime);
-    if (startIndex === -1) return;
+        const [day, startTime] = startSlotId.split('-');
+        const startIndex = TIMES.indexOf(startTime);
+        if (startIndex === -1) return;
 
-    const duration = d.duration || 2;
-    const group = d.studentGroup || 'Unknown';
+        const duration = d.duration || 2;
+        const group = d.studentGroup || 'Unknown';
 
-    for (let i = 0; i < duration; i++) {
-        const time = TIMES[startIndex + i];
-        const slotId = `${day}-${time}`;
+        for (let i = 0; i < duration; i++) {
+            const time = TIMES[startIndex + i];
+            const slotId = `${day}-${time}`;
 
-        // Mark Group Busy
-        if (!this.groupSchedule.has(group)) {
-            this.groupSchedule.set(group, new Set());
-        }
-        this.groupSchedule.get(group)!.add(slotId);
+            // Mark Group Busy
+            if (!this.groupSchedule.has(group)) {
+                this.groupSchedule.set(group, new Set());
+            }
+            this.groupSchedule.get(group)!.add(slotId);
 
-        // Mark Professors Busy
-        if (d.professorIds) {
-            d.professorIds.forEach((pid: string) => {
-                if (!this.professorSchedule.has(pid)) {
-                    this.professorSchedule.set(pid, new Set());
-                }
-                this.professorSchedule.get(pid)!.add(slotId);
-            });
+            // Mark Professors Busy
+            if (d.professorIds) {
+                d.professorIds.forEach((pid: string) => {
+                    if (!this.professorSchedule.has(pid)) {
+                        this.professorSchedule.set(pid, new Set());
+                    }
+                    this.professorSchedule.get(pid)!.add(slotId);
+                });
+            }
         }
     }
-}
 
     private isGroupBusy(groupId: string, slotId: string): boolean {
-    return this.groupSchedule.get(groupId)?.has(slotId) || false;
-}
+        return this.groupSchedule.get(groupId)?.has(slotId) || false;
+    }
 
     private isProfessorBusy(profId: string, slotId: string): boolean {
-    return this.professorSchedule.get(profId)?.has(slotId) || false;
-}
+        return this.professorSchedule.get(profId)?.has(slotId) || false;
+    }
 
-getConflicts() {
-    return this.conflicts;
-}
+    getConflicts() {
+        return this.conflicts;
+    }
 }
