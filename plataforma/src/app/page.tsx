@@ -2,6 +2,8 @@ import { StatusChecker } from '@/components/StatusChecker';
 import { DataInspector } from '@/components/DataInspector';
 import { Button } from '@/components/ui/button';
 
+import Link from 'next/link';
+
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24 bg-slate-50 dark:bg-slate-900">
@@ -31,7 +33,7 @@ export default function Home() {
 
             <div className="flex gap-4">
               <Button size="lg" className="bg-blue-600 hover:bg-blue-700" asChild>
-                <a href="/dashboard">Access Dashboard</a>
+                <Link href="/dashboard">Access Dashboard</Link>
               </Button>
               <Button size="lg" variant="outline">
                 Documentation
