@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'; // Added TabsContent
 import { GripVertical, Calendar as CalendarIcon, LayoutGrid, Sparkles, Settings } from 'lucide-react'; // Added Icons
+import { toast } from 'sonner';
 
 import { DisciplineEditor } from '@/components/DisciplineEditor';
 import { Discipline } from '@/types/schema';
@@ -109,6 +110,57 @@ export function ScheduleBoard() {
     }, [classes]);
 
 
+    // Watch for critical settings changes to prompt re-schedule
+    useEffect(() => {
+        if (!schedulerSettings) return;
+
+        // Simple heuristic: If we have unassigned classes and settings changed, suggest running it.
+        // Or if user just closed the settings dialog (we can check a 'dirty' flag, but for now exact change)
+        // We will trigger this ONLY if we see a change in a future iteration with refs, 
+        // for now let's just make the Toast Action inside the Settings Dialog "onSave".
+    }, [schedulerSettings]);
+
+    // Better approach: Pass a callback to SettingsDialog onSave
+    const handleSettingsSave = (newSettings: SchedulerSettings) => {
+        setSchedulerSettings(newSettings);
+        toast.info("Configurações salvas!", {
+            description: "Deseja aplicar as novas regras agora?",
+            action: {
+                label: "Rodar Smart Schedule",
+                onClick: () => handleAutoSchedule(newSettings)
+            }
+        });
+    };
+
+    async function handleAutoSchedule(configOverride?: SchedulerSettings) {
+        setSaving(true);
+        try {
+            const res = await fetch('/api/auto-schedule', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    classes,
+                    config: configOverride || schedulerSettings
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setClasses(data.classes);
+                if (data.conflicts.length > 0) {
+                    toast.warning("Agendamento concluído com conflitos", {
+                        description: data.conflicts.slice(0, 3).join('\n') + (data.conflicts.length > 3 ? '...' : '')
+                    });
+                } else {
+                    toast.success(t.confirm.optimizeSuccess);
+                }
+            }
+        } catch (e) {
+            toast.error("Erro ao otimizar agendamento");
+        } finally {
+            setSaving(false);
+        }
+    }
+
     async function handleSave() {
         setSaving(true);
         try {
@@ -131,9 +183,9 @@ export function ScheduleBoard() {
             });
 
             if (!res.ok) throw new Error('Failed to save');
-            alert(t.confirm.saveSuccess);
+            toast.success(t.confirm.saveSuccess);
         } catch (e) {
-            alert(t.confirm.saveError);
+            toast.error(t.confirm.saveError);
         } finally {
             setSaving(false);
         }
