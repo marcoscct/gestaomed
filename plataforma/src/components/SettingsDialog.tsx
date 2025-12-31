@@ -14,6 +14,7 @@ export interface GroupSettings {
     shifts: {
         morning: boolean;
         afternoon: boolean;
+        night: boolean;
     };
 }
 

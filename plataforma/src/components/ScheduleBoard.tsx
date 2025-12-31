@@ -24,7 +24,8 @@ export interface ClassItem extends Discipline {
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 const HOURS = [
     '07:30', '08:20', '09:10', '10:00', '10:50', '11:40',
-    '13:30', '14:20', '15:10', '16:00', '16:50', '17:40'
+    '13:30', '14:20', '15:10', '16:00', '16:50', '17:40',
+    '18:30', '19:20', '20:10', '21:00', '21:50'
 ];
 
 // NEW: Phase 5 Types
