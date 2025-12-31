@@ -5,13 +5,13 @@ import { ClassItem } from '@/components/ScheduleBoard';
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const { classes } = body;
+        const { classes, config } = body;
 
         if (!classes || !Array.isArray(classes)) {
             return NextResponse.json({ error: 'Invalid payload: classes array required' }, { status: 400 });
         }
 
-        const scheduler = new AutoScheduler();
+        const scheduler = new AutoScheduler(config); // Pass config here
         const optimizedClasses = scheduler.solve(classes as ClassItem[]);
         const conflicts = scheduler.getConflicts();
 
