@@ -7,11 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'; // Added TabsContent
-import { GripVertical, Calendar as CalendarIcon, LayoutGrid, Sparkles } from 'lucide-react'; // Added Icons
+import { GripVertical, Calendar as CalendarIcon, LayoutGrid, Sparkles, Settings } from 'lucide-react'; // Added Icons
 
 import { DisciplineEditor } from '@/components/DisciplineEditor';
 import { Discipline } from '@/types/schema';
 import { Dictionary } from '@/lib/lang'; // Import Dictionary
+import { SettingsDialog, SchedulerSettings, GroupSettings } from '@/components/SettingsDialog';
 
 // Types
 export interface ClassItem extends Discipline {
@@ -41,6 +42,10 @@ export function ScheduleBoard() {
     const [viewMode, setViewMode] = useState<ViewMode>('BOARD');
     const [generatedEvents, setGeneratedEvents] = useState<any[]>([]);
     const [editingDiscipline, setEditingDiscipline] = useState<ClassItem | null>(null);
+
+    // Settings State
+    const [showSettings, setShowSettings] = useState(false);
+    const [schedulerSettings, setSchedulerSettings] = useState<SchedulerSettings | undefined>(undefined);
 
     const t = Dictionary.board; // Shortcut for translations
 
@@ -173,6 +178,16 @@ export function ScheduleBoard() {
                     </Tabs>
 
                     <div className="flex items-center gap-2">
+                        {/* Settings Button */}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setShowSettings(true)}
+                            title="Settings"
+                        >
+                            <Settings className="w-5 h-5 text-slate-600" />
+                        </Button>
+
                         {/* Auto-Schedule Button */}
                         <Button
                             variant="secondary"
@@ -184,7 +199,10 @@ export function ScheduleBoard() {
                                         const res = await fetch('/api/auto-schedule', {
                                             method: 'POST',
                                             headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ classes })
+                                            body: JSON.stringify({
+                                                classes,
+                                                config: schedulerSettings // Send constraint config
+                                            })
                                         });
                                         const data = await res.json();
                                         if (data.success) {
@@ -227,16 +245,31 @@ export function ScheduleBoard() {
                     <div className="flex flex-wrap justify-between items-center mb-2 gap-4">
                         <Tabs value={selectedGroup} onValueChange={setSelectedGroup} className="flex-1 min-w-0">
                             <TabsList className="bg-white dark:bg-slate-900 border shadow-sm w-full justify-start overflow-x-auto h-auto p-1">
-                                {groups.map(g => (
-                                    <TabsTrigger key={g} value={g} className="whitespace-nowrap px-3 py-1.5 text-xs data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700">
-                                        {g === 'All' ? t.groups.all : g}
-                                    </TabsTrigger>
-                                ))}
+                                {groups.map(g => {
+                                    const color = getGroupColor(g);
+                                    return (
+                                        <TabsTrigger
+                                            key={g}
+                                            value={g}
+                                            className="whitespace-nowrap px-3 py-1.5 text-xs data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 gap-2"
+                                        >
+                                            {color && g !== 'All' && <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />}
+                                            {g === 'All' ? t.groups.all : g}
+                                        </TabsTrigger>
+                                    );
+                                })}
                             </TabsList>
                         </Tabs>
                     </div>
                 )}
 
+                <SettingsDialog
+                    open={showSettings}
+                    onOpenChange={setShowSettings}
+                    groups={groups.filter(g => g !== 'All')}
+                    currentSettings={schedulerSettings}
+                    onSave={setSchedulerSettings}
+                />
 
                 <DisciplineEditor
                     open={!!editingDiscipline}
@@ -266,6 +299,7 @@ export function ScheduleBoard() {
                                         key={cls.id}
                                         id={cls.id}
                                         item={cls}
+                                        color={getGroupColor(cls.studentGroup || '')}
                                         onEdit={() => setEditingDiscipline(cls)}
                                     />
                                 ))}
@@ -312,6 +346,7 @@ export function ScheduleBoard() {
                                                                     id={cls.id}
                                                                     item={cls}
                                                                     isBoard
+                                                                    color={getGroupColor(cls.studentGroup || '')}
                                                                     onEdit={() => setEditingDiscipline(cls)}
                                                                 />
                                                                 <button
@@ -356,7 +391,7 @@ export function ScheduleBoard() {
 }
 
 // Helper to separate Drag Handle from Clickable Body
-function DraggableItem({ id, item, isBoard, onEdit }: { id: string, item: ClassItem, isBoard?: boolean, onEdit?: () => void }) {
+function DraggableItem({ id, item, isBoard, onEdit, color }: { id: string, item: ClassItem, isBoard?: boolean, onEdit?: () => void, color?: string }) {
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id });
 
     const style = transform ? {
@@ -367,14 +402,17 @@ function DraggableItem({ id, item, isBoard, onEdit }: { id: string, item: ClassI
         return <div ref={setNodeRef} style={style} className="opacity-30 p-2 rounded bg-slate-200" />;
     }
 
+    // Dynamic styles for the bar
+    const borderStyle = { borderLeftColor: color || 'transparent', borderLeftWidth: color ? '4px' : '1px' };
+
     return (
         <div
             ref={setNodeRef}
-            style={style}
+            style={{ ...style, ...borderStyle }}
             className={cn(
                 "relative flex items-start p-2 rounded-lg border text-xs transition-all select-none group overflow-hidden pr-6", // Added padding right for handle
                 isBoard
-                    ? "bg-blue-50/80 border-blue-200 text-blue-900 shadow-sm hover:shadow-md dark:bg-blue-900/30 dark:border-blue-800 dark:text-blue-100"
+                    ? "bg-blue-50/80 text-blue-900 shadow-sm hover:shadow-md dark:bg-blue-900/30 dark:text-blue-100"
                     : "bg-white border-slate-200 hover:border-blue-300 hover:shadow-md dark:bg-slate-800 dark:border-slate-700"
             )}
         >
