@@ -127,18 +127,24 @@ export function SettingsDialog({ open, onOpenChange, groups, currentSettings, on
                         </div>
                     </TabsContent>
 
-                    <TabsContent value="groups" className="flex-1 overflow-hidden flex flex-col mt-2 border rounded-md">
-                        <ScrollArea className="h-[400px] p-4">
+                    <TabsContent value="groups" className="space-y-4">
+                        <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg text-sm text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                            <p className="font-semibold">ℹ️ Como funciona?</p>
+                            <p>Defina aqui os turnos padrão para cada semestre. Você pode abrir uma Disciplina específica para criar exceções a estas regras.</p>
+                        </div>
+
+                        <ScrollArea className="h-[400px] pr-4">
                             <div className="space-y-6">
                                 {groupSettings.map((group) => (
-                                    <div key={group.id} className="flex items-start justify-between p-3 border rounded-lg bg-slate-50 dark:bg-slate-900/50">
-                                        <div className="space-y-2">
-                                            <div className="flex items-center gap-2">
-                                                <Badge style={{ backgroundColor: group.color }} variant="outline" className="w-3 h-3 p-0 rounded-full border-0" />
-                                                <span className="font-bold text-sm">{group.id}</span>
-                                            </div>
-
-                                            {/* Color Picker (Simple Input for MVP) */}
+                                <div key={group.id} className="p-4 border rounded-lg space-y-4 bg-slate-50/50 dark:bg-slate-900/50">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="font-medium text-sm flex items-center gap-2">
+                                            {group.id}
+                                            <Badge variant="outline" className="text-xs font-normal" style={{ backgroundColor: group.color }}>
+                                                {group.color}
+                                            </Badge>
+                                        </h4>
+                                    </div>
                                             <div className="flex items-center gap-2">
                                                 <Label className="text-xs text-muted-foreground">Cor:</Label>
                                                 <input
@@ -175,16 +181,16 @@ export function SettingsDialog({ open, onOpenChange, groups, currentSettings, on
                                         </div>
                                     </div>
                                 ))}
-                            </div>
-                        </ScrollArea>
-                    </TabsContent>
-                </Tabs>
+                        </div>
+                    </ScrollArea>
+                </TabsContent>
+            </Tabs>
 
-                <DialogFooter className="pt-4">
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-                    <Button onClick={handleSave}>Salvar Configurações</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+            <DialogFooter className="pt-4">
+                <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+                <Button onClick={handleSave}>Salvar Configurações</Button>
+            </DialogFooter>
+        </DialogContent>
+        </Dialog >
     );
 }
