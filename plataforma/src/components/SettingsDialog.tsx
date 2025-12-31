@@ -58,7 +58,11 @@ export function SettingsDialog({ open, onOpenChange, groups, currentSettings, on
                         // Ensure strictly typical shape (polyfill if old data missing night)
                         return {
                             ...existing,
-                            shifts: { night: false, ...existing.shifts } // default night to false if missing
+                            shifts: {
+                                morning: existing.shifts.morning,
+                                afternoon: existing.shifts.afternoon,
+                                night: (existing.shifts as any).night ?? false
+                            }
                         };
                     }
                     return {
